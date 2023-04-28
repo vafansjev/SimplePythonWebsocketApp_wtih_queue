@@ -46,7 +46,7 @@ queue = asyncio.Queue()
 
 async def main():
     await asyncio.gather(
-        websockets.serve(server, 'localhost', WS_PORT),
+        websockets.serve(server, '0.0.0.0', WS_PORT),
         handle_messages('1')
     )
 
