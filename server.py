@@ -17,6 +17,8 @@ async def handle_messages(path):
                         await conn.send(message['message'])
                 except websockets.exceptions.ConnectionClosedOK:
                     server_connections[path].discard(conn)
+                except websockets.ConnectionClosedError:
+                    server_connections[path].discard(conn)
         queue.task_done()
 
 
@@ -31,17 +33,17 @@ async def server(websocket, path):
             try:
                 if conn == websocket:
                     send_to_current = True
-                    await conn.send(f'{message}')
+                    await conn.send(f"{message}")
                 else:
                     await conn.send(message)
             except websockets.exceptions.ConnectionClosedOK:
+                server_connections[path].discard(conn)
+            except websockets.ConnectionClosedError:
                 server_connections[path].discard(conn)
         if send_to_current:
             message_data = {'websocket': websocket, 'message': f"{message}"}
             await queue.put(message_data)
     server_connections[path].discard(websocket)
-
-queue = asyncio.Queue()
 
 
 async def main():
@@ -51,5 +53,12 @@ async def main():
     )
 
 if __name__ == '__main__':
+    queue = asyncio.Queue()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    try:
+        loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        print('Keyboard Interrupted')
+    finally:
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.close()
