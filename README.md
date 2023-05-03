@@ -1,4 +1,4 @@
-# This is just a simple websocket application using python (async)
+# This is just a simple websocket application using python (async + queue)
 
 ### Its run socket server locally on port 8765 and listens to all incoming messages.
 Note:
@@ -6,6 +6,8 @@ Note:
 - Clients connecting to separated channels (paths) and see only messages in it.
 - There is no delivery status reports/responds (simple websocket app)
 - Server doesn't save any data (no DB, files or anything like this)
+- There is no logging (use "docker logs" instead)
+- asyncio.Queue provides more reliable message delivery (i hope so)
 
 ### Stack:
 - Python 3.7 (or above)
