@@ -3,7 +3,7 @@ import websockets
 
 
 DEFAULT_END = 'ws://localhost:8765/channel1/'
-MSG_COUNTER = 100
+MSG_COUNTER = 10
 PATH_COUNTER = 10
 
 async def send_message2():
@@ -22,5 +22,6 @@ async def send_message():
             message = str(j)
             await websocket.send(message)
             print(f"Sent message: {message}")
+
 
 asyncio.get_event_loop().run_until_complete(send_message())

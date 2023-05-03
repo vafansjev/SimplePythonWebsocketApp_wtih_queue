@@ -32,39 +32,40 @@ async def handle_messages(path):
         # Message processed and now we can end this task
         queue.task_done()
 
-
 async def server(websocket, path):
     """
     This code defines an asynchronous server that listens to incoming WebSocket connections,
     receives incoming messages from clients, and sends received messages to other connected clients.
     """
+
+    if path not in server_connections:
+        server_connections[path] = set()
+    server_connections[path].add(websocket)
+
+    # Send message to all clients when new client is connected
+    for conn in server_connections[path]:
+        await conn.send(f"{websocket.remote_address[0]} joined the channel.")
+
     async for message in websocket:
         # Debug message to console
         print(f'User {websocket.remote_address} sends message: {message} to {path}')
-        # If it new path (channel) then add it to our current set
-        if path not in server_connections:
-            server_connections[path] = set()
-        server_connections[path].add(websocket)
+
         send_to_current = False
-        # For each channel send received message
         for conn in server_connections[path].copy():
             try:
-                # This resend message from sender to itself like "You: send something"
                 if conn == websocket:
                     send_to_current = True
                     await conn.send(f"{message}")
                 else:
                     await conn.send(message)
             except websockets.exceptions.ConnectionClosedOK:
-                server_connections[path].discard(conn)
+                        server_connections[path].discard(conn)
             except websockets.ConnectionClosedError:
-                server_connections[path].discard(conn)
+                    server_connections[path].discard(conn)
         if send_to_current:
             message_data = {'websocket': websocket, 'message': f"{message}"}
             await queue.put(message_data)
-    # Delete connection when all messages were sent
     server_connections[path].discard(websocket)
-
 
 async def main():
     """
