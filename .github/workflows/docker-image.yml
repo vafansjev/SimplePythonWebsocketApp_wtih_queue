@@ -20,10 +20,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }} 
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Push to Docker Hub
       - id: commit
-        uses: pr-mpt/actions-commit-hash@v2
-      - uses: docker/build-push-action@v2 
+        uses: pr-mpt/actions-commit-hash@v2        
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v2 
         with:
           context: ./
           file: ./Dockerfile
