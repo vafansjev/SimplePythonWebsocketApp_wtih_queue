@@ -29,5 +29,5 @@ jobs:
           file: ./Dockerfile
           push: true          
           tags: | 
-            ${{ secrets.DOCKER_USERNAME }}/simple-websocket-app:q_latest
+            ${{ secrets.DOCKER_USERNAME }}/simple-websocket-app:latest
             ${{ secrets.DOCKER_USERNAME }}/simple-websocket-app:${{ steps.commit.outputs.short }}
