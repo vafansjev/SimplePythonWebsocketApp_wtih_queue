@@ -44,7 +44,9 @@ async def server(websocket, path):
 
     # Send message to all clients when new client is connected
     for conn in server_connections[path]:
-        await conn.send(f"{websocket.remote_address[0]} joined the channel.")
+        hello_text = '{"name": "", "fileId": "", "eventType": "mousePosition", "mouseX":, "mouseY":, "time": "2023-05-04T10:26:38.791913"}'
+        await conn.send(hello_text)
+        # await conn.send(f"{websocket.remote_address[0]} joined the channel.")
 
     async for message in websocket:
         # Debug message to console
