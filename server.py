@@ -66,6 +66,8 @@ async def server(websocket, path):
                 server_connections[path].discard(conn)
             except websockets.ConnectionClosedError:
                 server_connections[path].discard(conn)
+            except websockets.exceptions.ConnectionClosedError:
+                server_connections[path].discard(conn)
         if send_to_current:
             message_data = {'websocket': websocket, 'message': f"{message}"}
             await queue.put(message_data)
