@@ -26,8 +26,12 @@ async def handle_messages(path):
                         await conn.send(message['message'])
                 # If connection closed then delete it from listeners list
                 except websockets.exceptions.ConnectionClosedOK:
+                    print('ERROR FROM HANDLER ClosedOK')
+                    await websocket.close(code=1000, reason='')
                     server_connections[path].discard(conn)
                 except websockets.exceptions.ConnectionClosedError:
+                    print('ERROR FROM HANDLER ClosedError')
+                    await websocket.close(code=1000, reason='')
                     server_connections[path].discard(conn)
         # Message processed and now we can end this task
         queue.task_done()
@@ -61,9 +65,15 @@ async def server(websocket, path):
                 else:
                     await conn.send(message)
             except websockets.exceptions.ConnectionClosedOK:
+                print('ERROR FROM SERVER ClosedOk')
                 await websocket.close(code=1000, reason='')
                 server_connections[path].discard(conn)
             except websockets.exceptions.ConnectionClosedError:
+                print('ERROR FROM SERVER ClosedError')
+                await websocket.close(code=1000, reason='')
+                server_connections[path].discard(conn)
+            except Exception as e:
+                print('ERROR FROM SERVER UNHANDLED')
                 await websocket.close(code=1000, reason='')
                 server_connections[path].discard(conn)
         if send_to_current:
