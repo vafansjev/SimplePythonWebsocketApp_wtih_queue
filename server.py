@@ -1,5 +1,6 @@
 import asyncio
 import websockets
+import websockets.exceptions as wexcept
 
 WS_PORT = 8765
 
@@ -59,34 +60,43 @@ async def server(websocket, path):
             await websocket.close(code=1000, reason='')
         # await conn.send(f"{websocket.remote_address[0]} joined the channel.")
 
-    async for message in websocket:
-        # Debug message to console
-        print(f'User {websocket.remote_address} sends message: {message} to {path}')
+    try:
+        async for message in websocket:
+            # Debug message to console
+            print(f'User {websocket.remote_address} sends message: {message} to {path}')
 
-        send_to_current = False
-        for conn in server_connections[path].copy():
-            try:
-                if conn == websocket:
-                    send_to_current = True
-                    await conn.send(f"{message}")
-                else:
-                    await conn.send(message)
-            except websockets.exceptions.ConnectionClosedOK:
-                print('ERROR FROM SERVER ClosedOk')
-                await websocket.close(code=1000, reason='')
-                server_connections[path].discard(conn)
-            except websockets.exceptions.ConnectionClosedError:
-                print('ERROR FROM SERVER ClosedError')
-                await websocket.close(code=1000, reason='')
-                server_connections[path].discard(conn)
-            except Exception as e:
-                print('ERROR FROM SERVER UNHANDLED')
-                await websocket.close(code=1000, reason='')
-                server_connections[path].discard(conn)
-        if send_to_current:
-            message_data = {'websocket': websocket, 'message': f"{message}"}
-            await queue.put(message_data)
+            send_to_current = False
+            for conn in server_connections[path].copy():
+                try:
+                    if conn == websocket:
+                        send_to_current = True
+                        await conn.send(f"{message}")
+                    else:
+                        await conn.send(message)
+                except websockets.exceptions.ConnectionClosedOK:
+                    print('ERROR FROM SERVER ClosedOk')
+                    await websocket.close(code=1000, reason='')
+                    server_connections[path].discard(conn)
+                except websockets.exceptions.ConnectionClosedError:
+                    print('ERROR FROM SERVER ClosedError')
+                    await websocket.close(code=1000, reason='')
+                    server_connections[path].discard(conn)
+                except Exception as e:
+                    print('ERROR FROM SERVER UNHANDLED')
+                    await websocket.close(code=1000, reason='')
+                    server_connections[path].discard(conn)
+            if send_to_current:
+                message_data = {'websocket': websocket, 'message': f"{message}"}
+                await queue.put(message_data)
+    except websockets.exceptions.ConnectionClosedOK:
+        print('ERROR FROM SERVER ClosedOk')
+        await websocket.close(code=1000, reason='')
+    except websockets.exceptions.ConnectionClosedError:
+        print('ERROR FROM SERVER ClosedError')
+        await websocket.close(code=1000, reason='')
     server_connections[path].discard(websocket)
+
+
 
 async def main():
     """
