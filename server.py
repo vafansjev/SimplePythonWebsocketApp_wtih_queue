@@ -54,11 +54,9 @@ async def server(websocket, path):
         except websockets.exceptions.ConnectionClosedOK:
             print('ERROR FROM SERVER ClosedOk')
             await websocket.close(code=1000, reason='')
-            server_connections[path].discard(conn)
         except websockets.exceptions.ConnectionClosedError:
             print('ERROR FROM SERVER ClosedError')
             await websocket.close(code=1000, reason='')
-            server_connections[path].discard(conn)
         # await conn.send(f"{websocket.remote_address[0]} joined the channel.")
 
     async for message in websocket:
