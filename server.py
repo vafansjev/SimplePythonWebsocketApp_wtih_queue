@@ -27,7 +27,7 @@ async def handle_messages(path):
                 # If connection closed then delete it from listeners list
                 except websockets.exceptions.ConnectionClosedOK:
                     server_connections[path].discard(conn)
-                except websockets.ConnectionClosedError:
+                except websockets.exceptions.ConnectionClosedError:
                     server_connections[path].discard(conn)
         # Message processed and now we can end this task
         queue.task_done()
@@ -60,13 +60,11 @@ async def server(websocket, path):
                     await conn.send(f"{message}")
                 else:
                     await conn.send(message)
-            except websockets.ConnectionClosedOK:
-                server_connections[path].discard(conn)
             except websockets.exceptions.ConnectionClosedOK:
-                server_connections[path].discard(conn)
-            except websockets.ConnectionClosedError:
+                await websocket.close(code=1000, reason='')
                 server_connections[path].discard(conn)
             except websockets.exceptions.ConnectionClosedError:
+                await websocket.close(code=1000, reason='')
                 server_connections[path].discard(conn)
         if send_to_current:
             message_data = {'websocket': websocket, 'message': f"{message}"}
@@ -77,6 +75,8 @@ async def main():
     """
     The main method launches the server and the message handling method, which are run concurrently.
     """
+    # serve default ping_interval=20, ping_timeout=20, close_timeout=10,
+    # Official docs https://websockets.readthedocs.io/en/stable/reference/asyncio/server.html#websockets.server.serve
     await asyncio.gather(
         websockets.serve(server, '0.0.0.0', WS_PORT),
         handle_messages('1')

@@ -3,7 +3,7 @@ import websockets
 
 
 DEFAULT_END = 'ws://localhost:8765/channel1/'
-MSG_COUNTER = 10
+MSG_COUNTER = 1000
 PATH_COUNTER = 10
 
 async def send_message2():
@@ -15,10 +15,17 @@ async def send_message2():
                 await websocket.send(message)
                 print(f"Sent message: {message} to channel {connection_string}")
 
-async def send_message():
+async def send_message3():
 
     async with websockets.connect(DEFAULT_END) as websocket:
         for j in range(0, MSG_COUNTER):
+            message = str(j)
+            await websocket.send(message)
+            print(f"Sent message: {message}")
+
+async def send_message():
+    for j in range(0, MSG_COUNTER):
+        async with websockets.connect(DEFAULT_END) as websocket:
             message = str(j)
             await websocket.send(message)
             print(f"Sent message: {message}")
